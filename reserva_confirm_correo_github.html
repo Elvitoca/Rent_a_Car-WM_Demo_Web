@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rent a Car WM | Reserva</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .contenedor {
+            position: relative;
+            /* Permitir posicionar elementos absolutos dentro */
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            /* Ajusta según sea necesario */
+            right: 20px;
+            /* Ajusta según sea necesario */
+            width: 10%;
+            /* Cambia el tamaño al 50% del original */
+            height: auto;
+            /* Mantiene la proporción de aspecto */
+            max-width: 210px;
+            /* Limitar el ancho máximo si es necesario */
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            /* Tamaño por defecto para pantallas grandes */
+            text-align: center;
+            /* Centra el texto si es necesario */
+            margin: 1rem 0;
+            /* Espaciado alrededor del h1 */
+        }
+
+        .reservation-details {
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+
+        .reservation-details h3 {
+            background-color: orange;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+            /* Remover el borde en la última fila */
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: black;
+
+        }
+
+        .detail-value {
+            color: #333;
+            text-align: right;
+            flex-grow: 1;
+        }
+
+        .car-image-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .total {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: red;
+            text-align: right;
+            padding: 10px 0;
+        }
+
+        .info-container {
+            background-image: url('path/to/your/car-image.jpg');
+            /* Cambia la ruta a tu imagen */
+            background-size: cover;
+            /* Para que la imagen cubra todo el contenedor */
+            background-position: center;
+            /* Centra la imagen */
+            position: relative;
+            /* Para el pseudo-elemento */
+            padding: 20px;
+            /* Espacio interno */
+            color: #ffffff;
+            /* Color del texto */
+            text-align: center;
+            /* Centra el texto */
+            border-radius: 10px;
+            /* Bordes redondeados */
+            margin: 20px;
+            /* Margen alrededor del contenedor */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            /* Sombra para darle profundidad */
+        }
+
+        .info-container::before {
+            content: '';
+            position: absolute;
+            /* Posiciona el pseudo-elemento */
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            /* Degradado negro al 60% */
+            border-radius: 10px;
+            /* Asegúrate de que los bordes coincidan */
+            z-index: 1;
+            /* Asegúrate de que esté detrás del texto */
+        }
+
+
+
+
+        /* Media Queries para Responsividad */
+        @media (max-width: 600px) {
+            .detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .detail-row span {
+                text-align: left;
+            }
+
+            .total {
+                font-size: 1.5em;
+            }
+
+            .contenedor {
+                padding: 10px;
+            }
+
+            .logo {
+                max-width: 105px;
+                /* Ajuste de logo para móviles */
+            }
+        }
+
+        /* Ajustes para pantallas pequeñas */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.rem;
+                /* Tamaño más pequeño para dispositivos móviles */
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.0rem;
+                /* Tamaño aún más pequeño para pantallas muy pequeñas */
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+
+    <div class="contenedor">
+        <img src="assets/img/WMLogo.png" alt="Logo WM" class="logo">
+        <h1>Resumen de Reserva</h1>
+        <br>
+        <div class="reservation-details">
+            <h3>Detalles del Cliente</h3>
+            <div class="detail-row">
+                <span class="detail-label">Nombre y Apellido:</span>
+                <span class="detail-value" id="reservationName"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Celular:</span>
+                <span class="detail-value" id="reservationPhone"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Forma de Pago:</span>
+                <span class="detail-value" id="reservationPayment"></span>
+            </div>
+
+            <h3>Detalles del Vehículo</h3>
+            <div class="detail-row">
+                <span class="detail-label">Vehículo:</span>
+                <span class="detail-value" id="reservationCarName"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Pasajeros:</span>
+                <span class="detail-value" id="reservationPassengers"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Colores:</span>
+                <span class="detail-value" id="reservationColors"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Transmisión:</span>
+                <span class="detail-value" id="reservationTransmission"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Motor:</span>
+                <span class="detail-value" id="reservationMotor"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Combustible:</span>
+                <span class="detail-value" id="reservationFuel"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Aire Acondicionado:</span>
+                <span class="detail-value" id="reservationAC"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Radio Bluetooth:</span>
+                <span class="detail-value" id="reservationRadio"></span>
+            </div>
+            <h3>Detalles del Alquiler</h3>
+            <div class="detail-row">
+                <span class="detail-label">Garantía:</span>
+                <span class="detail-value" id="reservationWarranty"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Precio por Día:</span>
+                <span class="detail-value" id="reservationPricePerDay"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Días Alquilados:</span>
+                <span class="detail-value" id="reservationRentalDays"></span>
+            </div>
+            <!-- Nueva sección para fechas de retiro y entrega -->
+<div class="detail-row">
+    <span class="detail-label">Fecha de Retiro:</span>
+    <span class="detail-value" id="reservationPickupDate"></span>
+</div>
+<div class="detail-row">
+    <span class="detail-label">Fecha de Entrega:</span>
+    <span class="detail-value" id="reservationReturnDate"></span>
+</div>
+<div class="detail-row">
+    <span class="detail-label">Tarifa:</span>
+    <span class="detail-value" id="reservationPricingType"></span>
+</div>
+            <div class="detail-row">
+                <span class="detail-label">Total:</span>
+                <span class="detail-value total" id="reservationTotalPrice"></span>
+            </div>
+        </div>
+
+        <div class="car-image-container">
+            <img id="carImage" src="" alt="Imagen del vehículo">
+        </div>
+        <br>
+
+        <div style="text-align: center; padding: 1em; font-size: 18px; width: 20em; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            
+           <!-- <button id="send-email" onclick="sendEmail()">Pedir por Email</button>-->
+            <button id="generate-wht" onclick="generateWHT()">WhatsApp</button>
+            <button id="send-email" onclick="sendEmail()">Reservar por Email</button>
+            <button id="generate-pdf" onclick="generatePDF()">Generar PDF</button>
+            <!--<button onclick="enviarPDFPorCorreo()">Enviar PDF por Email</button>-->
+
+
+        <!--   <p> <a href="reserv_ped_btn.html">Pedir a ver que pasa</a> </p>   -->
+
+
+            <br>
+            <label>
+                <input type="checkbox" id="accept-terms" required>
+                <br><br>
+                He leído y acepto los <a href="ruta/a/terminos-y-condiciones" target="_blank">Términos y condiciones</a>
+            </label>
+        </div>
+    </div>
+    
+       
+       <!-- Datos de localstore -->
+       
+<script>
+       
+       document.addEventListener('DOMContentLoaded', function() {
+    const reservationData = JSON.parse(localStorage.getItem('reservationData'));
+
+    if (reservationData) {
+        // Mostrar datos de usuario
+        document.getElementById('reservationName').textContent = reservationData.name;
+        document.getElementById('reservationPhone').textContent = reservationData.phone;
+        document.getElementById('reservationPayment').textContent = reservationData.payment;
+
+        // Mostrar datos del vehículo
+        document.getElementById('reservationCarName').textContent = reservationData.carName;
+        document.getElementById('reservationPassengers').textContent = reservationData.passengers;
+        document.getElementById('reservationColors').textContent = reservationData.colors;
+        document.getElementById('reservationTransmission').textContent = reservationData.transmission;
+        document.getElementById('reservationMotor').textContent = reservationData.motor;
+        document.getElementById('reservationFuel').textContent = reservationData.fuel;
+        document.getElementById('reservationAC').textContent = reservationData.ac;
+        document.getElementById('reservationRadio').textContent = reservationData.radio;
+        document.getElementById('reservationWarranty').textContent = reservationData.warranty;
+        document.getElementById('reservationPricePerDay').textContent = reservationData.pricePerDay;
+        document.getElementById('reservationTotalPrice').textContent = reservationData.totalPrice;
+        document.getElementById('reservationPricingType').textContent = reservationData.pricingType;
+
+        // Mostrar fechas de recogida y devolución
+        document.getElementById('reservationPickupDate').textContent = reservationData.pickupDate;
+        document.getElementById('reservationReturnDate').textContent = reservationData.returnDate;
+
+        // Función para convertir fecha DD/MM/YYYY a YYYY-MM-DD
+        function convertDateFormat(date) {
+            const parts = date.split('/');
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+
+        // Convertir las fechas
+        const pickupDate = new Date(convertDateFormat(reservationData.pickupDate));
+        const returnDate = new Date(convertDateFormat(reservationData.returnDate));  // Convertir y crear la fecha
+
+        // Verificar si las fechas son válidas
+        if (!isNaN(pickupDate) && !isNaN(returnDate)) {
+            const timeDifference = returnDate.getTime() - pickupDate.getTime();
+            const rentalDays = Math.max(Math.ceil(timeDifference / (1000 * 60 * 60 * 24)), 1);
+
+            document.getElementById('reservationRentalDays').textContent = rentalDays;
+        } else {
+            console.error("Error en el formato de fechas");
+            document.getElementById('reservationRentalDays').textContent = "Fecha inválida";
+        }
+
+        // Mostrar imagen del vehículo
+        const carImage = document.getElementById('carImage');
+        if (reservationData.image) {
+            carImage.src = reservationData.image;
+            carImage.alt = `Imagen del vehículo ${reservationData.carName}`;
+        } else {
+            carImage.alt = "Imagen no disponible";
+        }
+    } else {
+        document.querySelector('.reservation-details').innerHTML = '<p>No se encontraron detalles de la reserva.</p>';
+    }
+});
+
+      
+</script>
+    
+
+    <!-- Generar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+   
+    
+
+<!-- Generar PDF descargando en una carpeta-->
+ <!--
+    <script>
+        function formatDate(date) {
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+            return date.toLocaleString('es-ES', options);
+        }
+    
+        function generatePDF() {
+            if (!document.getElementById('accept-terms').checked) {
+                alert('Por favor, acepta los Términos y condiciones.');
+                return;
+            }
+    
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+    
+            // Cargar y agregar logotipo 
+            const logo = new Image();
+            logo.src = 'assets/img/WMLogo.png';
+            logo.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = logo.width;
+                canvas.height = logo.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(logo, 0, 0);
+    
+                const dataURL = canvas.toDataURL('image/png');
+    
+                // Ajustar tamaño del logo manteniendo proporción
+                const originalWidth = logo.width;
+                const originalHeight = logo.height;
+                const maxWidth = 50;
+                const maxHeight = 20;
+    
+                let width = maxWidth;
+                let height = (originalHeight / originalWidth) * maxWidth;
+    
+                if (height > maxHeight) {
+                    height = maxHeight;
+                    width = (originalWidth / originalHeight) * maxHeight;
+                }
+    
+                // Agregar la imagen al PDF
+                doc.addImage(dataURL, 'PNG', 10, 10, width, height);
+    
+                // Título del documento
+                doc.setFontSize(16);
+                doc.setFont("helvetica", "bold");
+                doc.text("Pedido de Alquiler RENT A CAR WM", 105, 20, { align: "center" });
+    
+                // Detalles del cliente y contenido del PDF
+                doc.setFontSize(12);
+                doc.text("Detalles del Cliente", 10, 40);
+                doc.line(10, 42, 200, 42);
+                doc.setFont("helvetica", "normal");
+                doc.text(`Nombre y Apellido: ${document.getElementById("reservationName").textContent}`, 10, 50);
+                doc.text(`Celular: ${document.getElementById("reservationPhone").textContent}`, 10, 60);
+                doc.text(`Dirección: ${document.getElementById("reservationAddress").textContent}`, 10, 70);
+    
+                // Detalles del vehículo
+                doc.setFontSize(12);
+                doc.text("Detalles del Vehículo", 10, 90);
+                doc.line(10, 92, 200, 92);
+                doc.setFont("helvetica", "normal");
+                doc.text(`Auto: ${document.getElementById("reservationCar").textContent}`, 10, 100);
+                doc.text(`Transmisión: ${document.getElementById("reservationTransmission").textContent}`, 10, 110);
+                doc.text(`Motor: ${document.getElementById("reservationMotor").textContent}`, 10, 120);
+                doc.text(`Aire Acondicionado: ${document.getElementById("reservationAC").textContent}`, 10, 130);
+                doc.text(`Radio Bluetooth: ${document.getElementById("reservationRadio").textContent}`, 10, 140);
+                doc.text(`Cantidad de Pasajeros: ${document.getElementById("reservationPassengers").textContent}`, 10, 150);
+                doc.text(`Color Seleccionado: ${document.getElementById("reservationColor").textContent}`, 10, 160);
+    
+                // Resumen de la reserva
+                doc.setFontSize(12);
+                doc.text("Resumen de Reserva", 10, 180);
+                doc.line(10, 182, 200, 182);
+                doc.text(`Fecha de Retiro: ${document.getElementById("reservationPickupDate").textContent}`, 10, 190);
+                doc.text(`Fecha de Devolución: ${document.getElementById("reservationReturnDate").textContent}`, 10, 200);
+                doc.text(`Ubicación de Retiro: ${document.getElementById("reservationPickupLocation").textContent}`, 10, 210);
+                doc.text(`Ubicación de Devolución: ${document.getElementById("reservationReturnLocation").textContent}`, 10, 220);
+                doc.text(`Total de Días: ${document.getElementById("reservationTotalDays").textContent}`, 10, 230);
+                doc.text(`Forma de Pago: ${document.getElementById("reservationPayment").textContent}`, 10, 240);
+    
+                // Total
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.text(`TOTAL GS: ${document.getElementById("reservationTotalPrice").textContent}`, 140, 250);
+    
+                // Convertir el PDF en base64
+                const pdfData = doc.output('datauristring');
+                const base64PDF = pdfData.split(',')[1];
+    
+                // Enviar el PDF al servidor para guardarlo
+                fetch('guardar_pdf.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ pdfData: base64PDF })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('El archivo PDF ha sido guardado correctamente en el servidor.');
+                    } else {
+                        alert('Hubo un error al guardar el PDF en el servidor.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            };
+        }
+    </script>
+    
+-->
+
+
+
+    <!--Generar PDF descarga el Usuario-->   
+    <script>
+        function formatDate(date) {
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+            return date.toLocaleString('es-ES', options);
+        }
+    
+        function generatePDF() {
+            if (!document.getElementById('accept-terms').checked) {
+                alert('Por favor, acepta los Términos y condiciones.');
+                return;
+            }
+    
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+    
+            // Cargar y agregar logotipo 
+            const logo = new Image();
+            logo.src = 'assets/img/WMLogo.png'; // Verifica que la ruta sea correcta
+            logo.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = logo.width;
+                canvas.height = logo.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(logo, 0, 0);
+    
+                const dataURL = canvas.toDataURL('image/png');
+    
+                const originalWidth = logo.width;
+                const originalHeight = logo.height;
+                const maxWidth = 50;
+                const maxHeight = 20;
+    
+                let width = maxWidth;
+                let height = (originalHeight / originalWidth) * maxWidth;
+    
+                if (height > maxHeight) {
+                    height = maxHeight;
+                    width = (originalWidth / originalHeight) * maxHeight;
+                }
+    
+                doc.addImage(dataURL, 'PNG', 10, 10, width, height);
+    
+                // Título del documento
+                doc.setFontSize(16);
+                doc.setFont("helvetica", "bold");
+                doc.text("Pedido de Alquiler RENT A CAR WM", 105, 20, {
+                    align: "center"
+                });
+    
+                // Detalles del cliente
+                doc.setFontSize(12);
+                doc.setTextColor(0);
+                doc.text("Detalles del Cliente", 10, 60);
+                doc.line(10, 62, 200, 62);
+                doc.text(`Nombre y Apellido: ${document.getElementById("reservationName").textContent}`, 10, 70);
+                doc.text(`Celular: ${document.getElementById("reservationPhone").textContent}`, 10, 80);
+    
+                // Encabezado de la tabla
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "bold");
+                doc.text("", 10, 90);
+                doc.text("Detalles del Servicio", 30, 90);
+                doc.text("Precio día", 140, 90);
+                doc.text("Valor", 180, 90);
+                doc.line(10, 92, 200, 92);
+    
+                // Contenido de la tabla
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                let startY = 100;
+    
+                // Agregar Vehículo
+                doc.text("*", 10, startY);
+                doc.text(`Vehículo: ${document.getElementById("reservationCarName").textContent}`, 30, startY);
+                doc.text(`${document.getElementById("reservationPricePerDay").textContent}`, 140, startY);
+                doc.text(`${document.getElementById("reservationTotalPrice").textContent}`, 180, startY);
+                doc.line(10, startY + 2, 200, startY + 2);
+    
+                startY += 10;
+    
+                // Agregar Pasajeros
+                doc.text("*", 10, startY);
+                doc.text(`Pasajeros: ${document.getElementById("reservationPassengers").textContent}`, 30, startY);
+                doc.line(10, startY + 2, 200, startY + 2);
+    
+                startY += 10;
+    
+                // Agregar Colores
+                doc.text("*", 10, startY);
+                doc.text(`Colores: ${document.getElementById("reservationColors").textContent}`, 30, startY);
+                doc.line(10, startY + 2, 200, startY + 2);
+    
+                startY += 10;
+    
+                // Agregar Transmisión
+                doc.text("*", 10, startY);
+                doc.text(`Transmisión: ${document.getElementById("reservationTransmission").textContent}`, 30, startY);
+                doc.line(10, startY + 2, 200, startY + 2);
+    
+                startY += 10;
+    
+                // Agregar Motor
+                doc.text("*", 10, startY);
+                doc.text(`Motor: ${document.getElementById("reservationMotor").textContent}`, 30, startY);
+                doc.line(10, startY + 2, 200, startY + 2);
+    
+                startY += 10;
+    
+                // Agregar Combustible
+                doc.text("*", 10, startY);
+                doc.text(`Combustible: ${document.getElementById("reservationFuel").textContent}`, 30, startY);
+                doc.line(10, startY + 2, 200, startY + 2);
+    
+                startY += 10;
+    
+                // Agregar Aire Acondicionado
+                doc.text("*", 10, startY);
+                doc.text(`Aire Acondicionado: ${document.getElementById("reservationAC").textContent}`, 30, startY);
+                doc.line(10, startY + 2, 200, startY + 2);
+    
+                startY += 10;
+    
+                // Agregar Radio Bluetooth
+                doc.text("*", 10, startY);
+                doc.text(`Radio Bluetooth: ${document.getElementById("reservationRadio").textContent}`, 30, startY);
+                doc.line(10, startY + 2, 200, startY + 2);
+    
+                startY += 10;
+    
+                // Agregar Días de Alquiler
+                doc.text("*", 10, startY);
+                doc.text(`Días de Alquiler: ${document.getElementById("reservationRentalDays").textContent}`, 30, startY);
+                doc.line(10, startY + 2, 200, startY + 2);
+    
+                startY += 10;
+    
+                // Agregar Fechas de Retiro y Entrega
+                doc.text("*", 10, startY);
+                doc.text(`Fecha de Retiro: ${document.getElementById("reservationPickupDate").textContent}`, 30, startY);
+                startY += 10;
+                doc.text("*", 10, startY);
+                doc.text(`Fecha de Entrega: ${document.getElementById("reservationReturnDate").textContent}`, 30, startY);
+                doc.line(10, startY + 2, 200, startY + 2);
+    
+                startY += 10;
+    
+                // Agregar Tipo de Tarifa
+                doc.text("*", 10, startY);
+                doc.text(`Tipo de Tarifa: ${document.getElementById("reservationPricingType").textContent}`, 30, startY);
+                doc.line(10, startY + 2, 200, startY + 2);
+    
+                startY += 10;
+    
+                // Agregar Garantía
+                doc.text("*", 10, startY);
+                doc.text(`Garantía: ${document.getElementById("reservationWarranty").textContent}`, 30, startY);
+                doc.line(10, startY + 2, 200, startY + 2);
+    
+                // Otros detalles (Fecha, forma de pago, total)
+                const currentDateTime = formatDate(new Date());
+                startY += 20;
+                doc.setFontSize(12);
+                doc.text(`Fecha: ${currentDateTime}`, 10, startY);
+                doc.text(`Forma de Pago: ${document.getElementById("reservationPayment").textContent}`, 10, startY + 10);
+    
+                doc.setFont("helvetica", "bold");
+                doc.text(`TOTAL GS: ${document.getElementById("reservationTotalPrice").textContent}`, 140, startY + 30);
+    
+                // Footer
+                const footerYStart = 280;
+                doc.setFontSize(8);
+                doc.setFont("helvetica", "normal");
+                doc.text("Rent a Car WM (c) 2024", 10, footerYStart);
+                doc.text("0983-496-378", 10, footerYStart + 5);
+                doc.text("gerencia@rentacarwm.com.py", 10, footerYStart + 10);
+                doc.text("San Miguel Esq. Feliciando Duarte - San Lorenzo", 10, footerYStart + 15);
+    
+                // Generar el nombre del archivo PDF
+                const reservationName = document.getElementById("reservationName").textContent;
+                const nombreArchivoPDF = `Reserva_Rent_a_Car_WM_${reservationName}.pdf`;
+    
+                doc.save(nombreArchivoPDF);
+            };
+        }
+    </script>
+
+    <!-- Enviar PDF por Email 
+<script>
+    function enviarPDFPorCorreo() {
+    if (!document.getElementById('accept-terms').checked) {
+        alert('Por favor, acepta los Términos y condiciones.');
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // [Aquí incluye el código de generación del PDF]
+
+    const pdfData = doc.output('blob');
+
+    // Convertir el Blob a Base64
+    const reader = new FileReader();
+    reader.readAsDataURL(pdfData);
+    reader.onloadend = function () {
+        const base64data = reader.result;
+
+        // Enviar PDF a PHP
+        fetch('enviar_pdf.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                pdfData: base64data,
+                email: 'destinatario@ejemplo.com'  // Cambia esto al correo del destinatario
+            })
+        }).then(response => response.json())
+          .then(data => {
+              if (data.exito) {
+                  alert('PDF enviado por correo electrónico con éxito.');
+              } else {
+                  alert('Hubo un error al enviar el PDF.');
+              }
+          })
+          .catch(error => console.error('Error:', error));
+    };
+}
+
+</script>
+-->
+    
+       
+       
+       <!--Enviar Email-->
+
+<script>
+    function sendEmail() {
+        // Verificar si se aceptaron los términos y condiciones
+        if (!document.getElementById('accept-terms').checked) {
+            alert('Por favor, acepta los Términos y condiciones.');
+            return;
+        }
+
+        const email = "elvitoca@gmail.com"; 
+        const subject = "Detalles de la Reserva Rent a Car WM";
+
+        // Obtener los datos de la reserva desde el HTML
+        const nombre = document.getElementById("reservationName").textContent;
+        const celular = document.getElementById("reservationPhone").textContent;
+        const formaPago = document.getElementById("reservationPayment").textContent;
+        const vehiculo = document.getElementById("reservationCarName").textContent;
+        const pasajeros = document.getElementById("reservationPassengers").textContent;
+        const colores = document.getElementById("reservationColors").textContent;
+        const transmision = document.getElementById("reservationTransmission").textContent;
+        const motor = document.getElementById("reservationMotor").textContent;
+        const combustible = document.getElementById("reservationFuel").textContent;
+        const aireAcondicionado = document.getElementById("reservationAC").textContent;
+        const radioBluetooth = document.getElementById("reservationRadio").textContent;
+        const garantia = document.getElementById("reservationWarranty").textContent;
+        const precioPorDia = document.getElementById("reservationPricePerDay").textContent;
+        const total = document.getElementById("reservationTotalPrice").textContent;
+        const diasAlquilados = document.getElementById("reservationRentalDays").textContent;
+        const fechaRetiro = document.getElementById("reservationPickupDate").textContent;
+        const fechaEntrega = document.getElementById("reservationReturnDate").textContent;
+        const tipoTarifa = document.getElementById("reservationPricingType").textContent;
+
+        // Verificar si rentalDays existe, si no, calcularlo
+        let rentalDays = diasAlquilados;
+        if (rentalDays === "undefined" || rentalDays === "Fecha inválida") {
+            const pickupDateParts = fechaRetiro.split('/');
+            const returnDateParts = fechaEntrega.split('/');
+
+            const formattedPickupDate = `${pickupDateParts[2]}-${pickupDateParts[1]}-${pickupDateParts[0]}`;
+            const formattedReturnDate = `${returnDateParts[2]}-${returnDateParts[1]}-${returnDateParts[0]}`;
+
+            const pickupDate = new Date(formattedPickupDate);
+            const returnDate = new Date(formattedReturnDate);
+
+            if (!isNaN(pickupDate) && !isNaN(returnDate)) {
+                const timeDifference = returnDate.getTime() - pickupDate.getTime();
+                rentalDays = Math.max(Math.ceil(timeDifference / (1000 * 60 * 60 * 24)), 1); // Calcula días y garantiza al menos 1 día
+            } else {
+                rentalDays = "Fecha inválida"; // Manejo de error
+            }
+        }
+
+        // Cuerpo del correo con formato HTML y diseño profesional
+        const body = `
+        <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; color: #333; background-color: #f4f4f4; }
+                    .invoice-container {
+                        width: 90%;
+                        margin: 0 auto;
+                        background-color: #ffffff;
+                        padding: 20px;
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                    }
+                    .invoice-header {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        margin-bottom: 20px;
+                        border-bottom: 2px solid #0044cc;
+                        padding-bottom: 10px;
+                    }
+                    .invoice-header h2 {
+                        color: #0044cc;
+                        font-size: 22px;
+                        margin: 0;
+                    }
+                    .invoice-header img {
+                        height: 50px;
+                    }
+                    .section-title {
+                        font-size: 18px;
+                        font-weight: bold;
+                        margin-top: 20px;
+                        color: #333333;
+                        border-bottom: 1px solid #dddddd;
+                        padding-bottom: 5px;
+                    }
+                    .content {
+                        margin-left: 20px;
+                        font-size: 14px;
+                        color: #555555;
+                    }
+                    .content p {
+                        margin: 5px 0;
+                    }
+                    table {
+                        width: 100%;
+                        margin-top: 20px;
+                        border-collapse: collapse;
+                    }
+                    table th, table td {
+                        padding: 10px;
+                        text-align: left;
+                        border: 1px solid #ddd;
+                    }
+                    table th {
+                        background-color: #f4f4f4;
+                        color: #333;
+                    }
+                    .total-price {
+                        margin-top: 20px;
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #333333;
+                        text-align: right;
+                    }
+                    .footer {
+                        margin-top: 30px;
+                        font-size: 12px;
+                        text-align: center;
+                        color: #888888;
+                        border-top: 1px solid #ddd;
+                        padding-top: 10px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="invoice-container">
+                    <div class="invoice-header">
+                       
+                        <h2>Pedido de Reserva Rent a Car WM</h2>
+                    </div>
+
+                    <div class="section-title">🧍 Detalles del Cliente:</div>
+                    <div class="content">
+                        <p><strong>Nombre y Apellido:</strong> ${nombre}</p>
+                        <p><strong>Celular:</strong> ${celular}</p>
+                        <p><strong>Forma de Pago:</strong> ${formaPago}</p>
+                    </div>
+
+                    <div class="section-title">🚗 Detalles del Vehículo:</div>
+                    <div class="content">
+                        <p><strong>Vehículo:</strong> ${vehiculo}</p>
+                        <p><strong>Pasajeros:</strong> ${pasajeros}</p>
+                        <p><strong>Colores disponibles:</strong> ${colores}</p>
+                        <p><strong>Transmisión:</strong> ${transmision}</p>
+                        <p><strong>Motor:</strong> ${motor}</p>
+                        <p><strong>Combustible:</strong> ${combustible}</p>
+                        <p><strong>Aire Acondicionado:</strong> ${aireAcondicionado}</p>
+                        <p><strong>Radio Bluetooth:</strong> ${radioBluetooth}</p>
+                        <p><strong>Garantía:</strong> ${garantia}</p>
+                    </div>
+
+                    <div class="section-title">📅 Detalles del Alquiler:</div>
+                    <div class="content">
+                        <p><strong>Precio por Día:</strong> ${precioPorDia}</p>
+                        <p><strong>Total Días de Alquiler:</strong> ${rentalDays}</p>
+                        <p><strong>Fecha de Retiro:</strong> ${fechaRetiro}</p>
+                        <p><strong>Fecha de Entrega:</strong> ${fechaEntrega}</p>
+                        <p><strong>Tipo de Tarifa:</strong> ${tipoTarifa}</p>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Descripción</th>
+                                <th>Precio por día</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Alquiler por ${rentalDays} días</td>
+                                <td>${precioPorDia}</td>
+                                <td>${total}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="total-price">
+                        <p><strong>Precio Total:</strong> ${total}</p>
+                    </div>
+
+                    <div class="footer">
+                        <p>Rent a Car WM | Tel: 0983-496-378 | <a href="mailto:gerencia@rentacarwm.com.py">gerencia@rentacarwm.com.py</a><br>
+                        San Miguel Esq. Feliciando Duarte - San Lorenzo</p>
+                    </div>
+                </div>
+            </body>
+        </html>
+        `;
+
+        // Enviar los datos al servidor para que este envíe el correo
+        fetch('enviar_correo_github.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                subject: subject,
+                body: body,
+                email: email
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Correo enviado correctamente.');
+            } else {
+                alert('Hubo un error al enviar el correo.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al intentar enviar el correo.');
+        });
+    }
+</script>
+
+   <!-- Generar Whatsapp -->
+   
+   <script>
+    function generateWHT() {
+        // Verificar si se aceptaron los términos y condiciones
+        const termsAccepted = document.getElementById('accept-terms').checked;
+
+        if (!termsAccepted) {
+            alert('Por favor, acepta los Términos y condiciones.');
+            return;
+        }
+
+        const reservationData = JSON.parse(localStorage.getItem('reservationData'));
+
+        if (reservationData) {
+            // Verificar si rentalDays existe, si no, calcularlo
+            if (!reservationData.rentalDays) {
+                // Asegurarse de que las fechas de retiro y entrega estén definidas
+                const pickupDateParts = reservationData.pickupDate.split('/');
+                const returnDateParts = reservationData.returnDate.split('/');
+                
+                // Convertir las fechas al formato adecuado (YYYY-MM-DD)
+                const formattedPickupDate = `${pickupDateParts[2]}-${pickupDateParts[1]}-${pickupDateParts[0]}`;
+                const formattedReturnDate = `${returnDateParts[2]}-${returnDateParts[1]}-${returnDateParts[0]}`;
+
+                const pickupDate = new Date(formattedPickupDate);
+                const returnDate = new Date(formattedReturnDate);
+
+                if (!isNaN(pickupDate) && !isNaN(returnDate)) {
+                    const timeDifference = returnDate.getTime() - pickupDate.getTime();
+                    reservationData.rentalDays = Math.max(Math.ceil(timeDifference / (1000 * 60 * 60 * 24)), 1); // Calcula días y garantiza al menos 1 día
+                    // Guardar el valor calculado de rentalDays en localStorage
+                    localStorage.setItem('reservationData', JSON.stringify(reservationData));
+                } else {
+                    reservationData.rentalDays = "Fecha inválida"; // Manejo de error
+                }
+            }
+
+            // Crear el mensaje de WhatsApp
+            let message = `*📄 Reserva de Vehículo - Rent a Car WM*\n\n`;
+
+            // Detalles del Cliente
+            message += `*🧍 Detalles del Cliente:*\n`;
+            message += `- *Nombre:* ${reservationData.name}\n`;
+            message += `- *Teléfono:* ${reservationData.phone}\n`;
+            message += `- *Método de pago:* ${reservationData.payment}\n\n`;
+
+            // Detalles del Vehículo
+            message += `*🚗 Detalles del Vehículo:*\n`;
+            message += `- *Vehículo:* ${reservationData.carName}\n`;
+            message += `- *Pasajeros:* ${reservationData.passengers}\n`;
+            message += `- *Colores disponibles:* ${reservationData.colors}\n`;
+            message += `- *Transmisión:* ${reservationData.transmission}\n`;
+            message += `- *Motor:* ${reservationData.motor}\n`;
+            message += `- *Combustible:* ${reservationData.fuel}\n`;
+            message += `- *Aire acondicionado:* ${reservationData.ac}\n`;
+            message += `- *Radio Bluetooth:* ${reservationData.radio}\n`;
+            message += `- *Garantía:* ${reservationData.warranty}\n\n`;
+
+            // Detalles del Alquiler
+            message += `*📅 Detalles del Alquiler:*\n`;
+            message += `- *Precio por día:* ${reservationData.pricePerDay}\n`;
+            message += `- *Total días de alquiler:* ${reservationData.rentalDays}\n`;
+            message += `- *Fecha de retiro:* ${reservationData.pickupDate}\n`;
+            message += `- *Fecha de entrega:* ${reservationData.returnDate}\n`;
+            message += `- *Tipo de tarifa:* ${reservationData.pricingType}\n`;
+            message += `- *Precio total:* ${reservationData.totalPrice}\n\n`;
+
+            message += `*Gracias por elegir Rent a Car WM.* 🚗📞`;
+
+            // Codificar el mensaje para URL
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/595981484683?text=${encodedMessage}`;
+
+            // Redirigir al usuario a WhatsApp
+            window.open(whatsappUrl, '_blank');
+        } else {
+            alert("No se encontraron detalles de la reserva.");
+        }
+    }
+</script>
+
+</body>
+
+</html>
